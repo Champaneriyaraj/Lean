@@ -998,20 +998,20 @@ namespace QuantConnect.Lean.Engine.TransactionHandlers
 
                     try
                     {
-                        // to be called before updating the Portfolio
-                        NewOrderEvent?.Invoke(this, fill);
-
                         _algorithm.Portfolio.ProcessFill(fill);
                         _algorithm.TradeBuilder.ProcessFill(
                             fill,
                             securityConversionRate,
                             feeInAccountCurrency,
                             multiplier);
+
+                        // to be called after updating the Portfolio
+                        NewOrderEvent?.Invoke(this, fill);
                     }
                     catch (Exception err)
                     {
                         Log.Error(err);
-                        _algorithm.Error(string.Format("Order Error: id: {0}, Error in Portfolio.ProcessFill: {1}", order.Id, err.Message));
+                        _algorithm.Error($"Order Error: id: {order.Id}, Error in Portfolio.ProcessFill: {err.Message}");
                     }
                 }
 
