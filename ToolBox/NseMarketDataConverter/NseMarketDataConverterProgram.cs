@@ -60,42 +60,34 @@ namespace QuantConnect.ToolBox.NseMarketDataConverter
             var count = 0;
             var totalCount = GetCount(sourceDirectory);
             Console.WriteLine("Processing {0} Files ...", totalCount);
-
-            //Enumerate folders by date as all folders are named as dates
-            foreach (var dateDirectory in Directory.EnumerateDirectories(sourceDirectory))
+            
+            foreach (var file in Directory.EnumerateFiles(sourceDirectory))
             {
-                var date = GetDate(dateDirectory);
-                var dateDirectoryExtension = dateDirectory + "\\1\\Equity";
-                foreach (var file in Directory.EnumerateFiles(dateDirectoryExtension))
+                var symbol = GetSymbol(file);
+                var fileContents = File.ReadAllText(file);
+                string[] stringSeparators = new string[] { "\n" };
+                string[] lines = fileContents.Split(stringSeparators, StringSplitOptions.None).Skip(1).ToArray();
+                var datawriter = new LeanDataWriter(Resolution.Daily, symbol, destinationDirectory);
+                IList<TradeBar> fileEnum = new List<TradeBar>();
+                foreach (string line in lines)
                 {
-                    var symbol = GetSymbol(file);
-                    var fileContents = File.ReadAllText(file);
-                    string[] stringSeparators = new string[] { "\n" };
-                    string[] lines = fileContents.Split(stringSeparators, StringSplitOptions.None);
-                    var datawriter = new LeanDataWriter(Resolution.Minute, symbol, destinationDirectory);
-                    IList<TradeBar> fileEnum = new List<TradeBar>();
-                    foreach (string line in lines)
-                    {
-                        string[] separators = new string[] { "," };
-                        string[] linearray = line.Split(separators, StringSplitOptions.None);
-                        if (linearray.Length > 2)
-                        {
-                            String newline = linearray[0] + " ";
-                            newline += linearray[1];
-                            newline += ":00.0000";
-                            var Time = Parse.DateTimeExact(newline, DateFormat.Forex);
-                            var open = Parse.Decimal(linearray[2]);
-                            var high = Parse.Decimal(linearray[3]);
-                            var low = Parse.Decimal(linearray[4]);
-                            var close = Parse.Decimal(linearray[5]);
-                            var volume = linearray[6].LongCount();
-                            var linedata = new TradeBar(Time, symbol, open, high, low, close, volume);
-                            fileEnum.Add(linedata);
-                        }
-                    }
-                    datawriter.Write(fileEnum);
-                    count++;
+                    if (string.IsNullOrEmpty(line))
+                        continue;
+
+                    string[] separators = new string[] { "," };
+                    string[] linearray = line.Split(separators, StringSplitOptions.None);
+
+                    var Time = Parse.DateTimeExact(linearray[2].Replace("\"", ""), "dd-MMM-yyyy");
+                    var open = Parse.Decimal(linearray[4].Replace("\"", ""));
+                    var high = Parse.Decimal(linearray[5].Replace("\"", ""));
+                    var low = Parse.Decimal(linearray[6].Replace("\"", ""));
+                    var close = Parse.Decimal(linearray[8].Replace("\"", ""));
+                    var volume = Parse.Long(linearray[10].Replace("\"", ""));
+                    var linedata = new TradeBar(Time, symbol, open, high, low, close, volume);
+                    fileEnum.Add(linedata);
                 }
+                datawriter.Write(fileEnum);
+                count++;
             }
             Console.ReadKey();
         }
@@ -123,7 +115,7 @@ namespace QuantConnect.ToolBox.NseMarketDataConverter
             foreach (var date in Directory.EnumerateDirectories(sourceDirectory))
             {
                 StripFinalSlash(date);
-                count += Directory.EnumerateFiles(date + "\\1\\Equity\\", "*").Count();
+                count += Directory.EnumerateFiles(date).Count();
             }
             return count;
         }

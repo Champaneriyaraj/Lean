@@ -41,8 +41,8 @@ namespace QuantConnect.Algorithm.CSharp
             // Set requested data resolution
             UniverseSettings.Resolution = Resolution.Minute;
 
-            SetStartDate(2013, 10, 07);  //Set Start Date
-            SetEndDate(2013, 10, 11);    //Set End Date
+            SetStartDate(2018, 09, 19);  //Set Start Date
+            SetEndDate(2018, 09, 19);    //Set End Date
             SetCash(100000);             //Set Strategy Cash
 
             // Find more symbols here: http://quantconnect.com/data
@@ -51,7 +51,7 @@ namespace QuantConnect.Algorithm.CSharp
             // Options Resolution: Minute Only.
 
             // set algorithm framework models
-            SetUniverseSelection(new ManualUniverseSelectionModel(QuantConnect.Symbol.Create("SPY", SecurityType.Equity, Market.USA)));
+            SetUniverseSelection(new ManualUniverseSelectionModel(QuantConnect.Symbol.Create("RELIANCE", SecurityType.Equity, Market.NSE)));
             SetAlpha(new ConstantAlphaModel(InsightType.Price, InsightDirection.Up, TimeSpan.FromMinutes(20), 0.025, null));
             SetPortfolioConstruction(new EqualWeightingPortfolioConstructionModel());
             SetExecution(new ImmediateExecutionModel());
