@@ -39,11 +39,11 @@ namespace QuantConnect.Algorithm.CSharp
         public override void Initialize()
         {
             // Set requested data resolution
-            UniverseSettings.Resolution = Resolution.Minute;
+            UniverseSettings.Resolution = Resolution.Daily;
 
-            SetStartDate(2018, 09, 19);  //Set Start Date
-            SetEndDate(2018, 09, 19);    //Set End Date
-            SetCash(100000);             //Set Strategy Cash
+            SetStartDate(2018, 09, 20);  //Set Start Date
+            SetEndDate(2019, 09, 19);    //Set End Date
+            SetCash(10000);             //Set Strategy Cash
 
             // Find more symbols here: http://quantconnect.com/data
             // Forex, CFD, Equities Resolutions: Tick, Second, Minute, Hour, Daily.
@@ -51,7 +51,7 @@ namespace QuantConnect.Algorithm.CSharp
             // Options Resolution: Minute Only.
 
             // set algorithm framework models
-            SetUniverseSelection(new ManualUniverseSelectionModel(QuantConnect.Symbol.Create("RELIANCE", SecurityType.Equity, Market.NSE)));
+            SetUniverseSelection(new ManualUniverseSelectionModel(QuantConnect.Symbol.Create("RELIANCE.NS", SecurityType.Equity, Market.USA)));
             SetAlpha(new ConstantAlphaModel(InsightType.Price, InsightDirection.Up, TimeSpan.FromMinutes(20), 0.025, null));
             SetPortfolioConstruction(new EqualWeightingPortfolioConstructionModel());
             SetExecution(new ImmediateExecutionModel());
@@ -62,7 +62,8 @@ namespace QuantConnect.Algorithm.CSharp
         {
             if (orderEvent.Status.IsFill())
             {
-                Debug($"Purchased Stock: {orderEvent.Symbol}");
+                var order = Transactions.GetOrderById(orderEvent.OrderId);
+                Debug($"{Time.ToStringInvariant()} >> ORDER >> {order}");
             }
         }
 
@@ -81,16 +82,16 @@ namespace QuantConnect.Algorithm.CSharp
         /// </summary>
         public Dictionary<string, string> ExpectedStatistics => new Dictionary<string, string>
         {
-            {"Total Trades", "3"},
-            {"Average Win", "0%"},
-            {"Average Loss", "-1.03%"},
-            {"Compounding Annual Return", "217.805%"},
+            {"Total Trades", "30"},
+            {"Average Win", "3%"},
+            {"Average Loss", "-1%"},
+            {"Compounding Annual Return", "240%"},
             {"Drawdown", "2.300%"},
             {"Expectancy", "-1"},
-            {"Net Profit", "1.597%"},
+            {"Net Profit", "20.0%"},
             {"Sharpe Ratio", "3.856"},
-            {"Loss Rate", "100%"},
-            {"Win Rate", "0%"},
+            {"Loss Rate", "15%"},
+            {"Win Rate", "85%"},
             {"Profit-Loss Ratio", "0"},
             {"Alpha", "0.566"},
             {"Beta", "0.318"},
